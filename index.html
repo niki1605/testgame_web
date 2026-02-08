@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Космический защитник | Мобильная игра</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Мобильное меню -->
+    <div class="mobile-menu-btn" id="menuBtn">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <!-- Кнопка паузы в правом верхнем углу -->
+    <div class="pause-btn-top" id="pauseBtnTop">
+        <i class="fas fa-pause"></i>
+    </div>
+
+    <!-- Боковая панель управления -->
+    <div class="side-panel" id="sidePanel">
+        <div class="panel-header">
+            <h3><i class="fas fa-gamepad"></i> Управление</h3>
+            <button class="close-panel" id="closePanel">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="panel-content">
+            <div class="stats-panel">
+                <div class="stat-panel">
+                    <span class="stat-icon"><i class="fas fa-heart"></i></span>
+                    <div class="stat-info">
+                        <span class="stat-label">Жизни</span>
+                        <span id="lives" class="stat-value">3</span>
+                    </div>
+                </div>
+                <div class="stat-panel">
+                    <span class="stat-icon"><i class="fas fa-star"></i></span>
+                    <div class="stat-info">
+                        <span class="stat-label">Очки</span>
+                        <span id="score" class="stat-value">0</span>
+                    </div>
+                </div>
+                <div class="stat-panel">
+                    <span class="stat-icon"><i class="fas fa-bolt"></i></span>
+                    <div class="stat-info">
+                        <span class="stat-label">Уровень</span>
+                        <span id="level" class="stat-value">1</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-buttons">
+                <button id="startBtn" class="panel-btn btn-start">
+                    <i class="fas fa-play"></i>
+                    <span>Играть</span>
+                </button>
+                <button id="restartBtn" class="panel-btn btn-restart">
+                    <i class="fas fa-redo"></i>
+                    <span>Заново</span>
+                </button>
+            </div>
+            
+            <div class="instructions-panel">
+                <h4><i class="fas fa-info-circle"></i> Как играть</h4>
+                <p>1. Защищайте планету от астероидов</p>
+                <p>2. Свайп влево/вправо - движение корабля</p>
+                <p>3. Касание экрана - стрельба</p>
+                <p>4. Избегайте столкновений с астероидами</p>
+                <p>5. Не давайте астероидам упасть на планету</p>
+            </div>
+            
+            <div class="settings-panel">
+                <h4><i class="fas fa-cog"></i> Настройки</h4>
+                <div class="setting-item">
+                    <span>Звук</span>
+                    <label class="switch">
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <span>Вибрация</span>
+                    <label class="switch">
+                        <input type="checkbox" id="vibrateToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <button class="panel-btn btn-fullscreen" id="fullscreenBtn">
+                    <i class="fas fa-expand"></i>
+                    <span>Полный экран</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Игровой контейнер (полноэкранный) -->
+    <div class="game-container-fullscreen">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Минимальные UI элементы на игровом поле -->
+        <div class="game-minimal-ui">
+            <div class="quick-stats">
+                <span class="quick-stat">
+                    <i class="fas fa-heart"></i> <span id="quickLives">3</span>
+                </span>
+                <span class="quick-stat">
+                    <i class="fas fa-star"></i> <span id="quickScore">0</span>
+                </span>
+                <span class="quick-stat">
+                    <i class="fas fa-bolt"></i> <span id="quickLevel">1</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Окно Game Over -->
+    <div id="gameOver" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-gamepad"></i> Игра окончена!</h2>
+            <p>Ваш результат: <span id="finalScore">0</span> очков</p>
+            <p>Уровень: <span id="finalLevel">1</span></p>
+            <p class="best-score">Лучший результат: <span id="bestScore">0</span> очков</p>
+            
+            <div class="modal-buttons">
+                <button id="playAgainBtn" class="btn btn-primary">
+                    <i class="fas fa-redo"></i> Играть снова
+                </button>
+                <button id="shareBtn" class="btn btn-secondary">
+                    <i class="fas fa-share"></i> Поделиться
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Минимальный тулбар (только для больших экранов) -->
+    <div class="desktop-toolbar">
+        <div class="desktop-stats">
+            <span>Жизни: <span id="desktopLives">3</span></span>
+            <span>Очки: <span id="desktopScore">0</span></span>
+            <span>Уровень: <span id="desktopLevel">1</span></span>
+        </div>
+        <div class="desktop-controls">
+            <button id="desktopStartBtn" class="desktop-btn">
+                <i class="fas fa-play"></i> Старт
+            </button>
+            <button id="desktopPauseBtn" class="desktop-btn">
+                <i class="fas fa-pause"></i> Пауза
+            </button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

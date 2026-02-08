@@ -1,0 +1,729 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: #000;
+    color: #fff;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+}
+
+/* Кнопка меню в левом верхнем углу */
+.mobile-menu-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 229, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    cursor: pointer;
+    border: 2px solid rgba(0, 229, 255, 0.5);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s;
+}
+
+.mobile-menu-btn:active {
+    transform: scale(0.95);
+    background: rgba(0, 229, 255, 0.4);
+}
+
+.mobile-menu-btn i {
+    font-size: 1.5rem;
+    color: #00e5ff;
+}
+
+/* Боковая панель */
+.side-panel {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 280px;
+    height: 100vh;
+    background: rgba(25, 25, 60, 0.95);
+    backdrop-filter: blur(20px);
+    z-index: 1001;
+    transition: left 0.3s ease;
+    box-shadow: 5px 0 25px rgba(0, 0, 0, 0.5);
+    border-right: 2px solid #00e5ff;
+    overflow-y: auto;
+}
+
+.side-panel.open {
+    left: 0;
+}
+
+.panel-header {
+    padding: 20px;
+    background: linear-gradient(90deg, #1a237e, #311b92);
+    border-bottom: 2px solid #00e5ff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.panel-header h3 {
+    font-size: 1.2rem;
+    color: #00e5ff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.close-panel {
+    background: transparent;
+    border: none;
+    color: #00e5ff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s;
+}
+
+.close-panel:active {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.panel-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* Статистика в панели */
+.stats-panel {
+    background: rgba(0, 20, 40, 0.7);
+    border-radius: 15px;
+    padding: 15px;
+    border: 1px solid rgba(0, 229, 255, 0.3);
+}
+
+.stat-panel {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-panel:last-child {
+    border-bottom: none;
+}
+
+.stat-icon {
+    color: #00e5ff;
+    font-size: 1.5rem;
+    width: 30px;
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #a5d6ff;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #4fc3f7;
+    text-shadow: 0 0 5px rgba(79, 195, 247, 0.7);
+}
+
+/* Кнопки в панели */
+.control-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.panel-btn {
+    padding: 15px 20px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: all 0.3s;
+    color: white;
+}
+
+.panel-btn:active {
+    transform: translateY(2px);
+}
+
+.btn-start {
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+}
+
+.btn-pause {
+    background: linear-gradient(135deg, #8e2de2, #4a00e0);
+}
+
+.btn-restart {
+    background: linear-gradient(135deg, #f46b45, #eea849);
+}
+
+.btn-fullscreen {
+    background: rgba(0, 229, 255, 0.2);
+    border: 1px solid #00e5ff;
+    color: #00e5ff;
+    width: 100%;
+}
+
+/* Кнопки управления в панели */
+.mobile-controls-panel {
+    background: rgba(10, 20, 40, 0.6);
+    border-radius: 15px;
+    padding: 20px;
+    border-left: 4px solid #00e5ff;
+}
+
+.mobile-controls-panel h4 {
+    color: #00e5ff;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+}
+
+.control-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.control-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 229, 255, 0.2);
+    backdrop-filter: blur(10px);
+    color: white;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    margin: 0 auto;
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+    background: rgba(0, 229, 255, 0.4);
+}
+
+.btn-left, .btn-right {
+    background: rgba(76, 175, 80, 0.3);
+    border-color: rgba(76, 175, 80, 0.6);
+}
+
+.btn-shoot {
+    background: rgba(255, 87, 34, 0.3);
+    border-color: rgba(255, 87, 34, 0.6);
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+}
+
+/* Инструкции в панели */
+.instructions-panel {
+    background: rgba(30, 30, 70, 0.6);
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.instructions-panel h4 {
+    color: #00e5ff;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+}
+
+.instructions-panel p {
+    color: #b3e5fc;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Настройки в панели */
+.settings-panel {
+    background: rgba(30, 30, 70, 0.6);
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.settings-panel h4 {
+    color: #00e5ff;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-item span {
+    color: #b3e5fc;
+    font-size: 1rem;
+}
+
+/* Переключатель */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #00e5ff;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Игровой контейнер (полноэкранный) */
+.game-container-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    z-index: 1;
+}
+
+#gameCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Минимальный UI на игровом поле */
+.game-minimal-ui {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    border-radius: 20px;
+    padding: 10px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.quick-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.quick-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.quick-stat i {
+    color: #00e5ff;
+}
+
+/* Модальное окно Game Over */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    justify-content: center;
+    align-items: center;
+    z-index: 1002;
+    padding: 20px;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1a237e, #311b92);
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    width: 100%;
+    max-width: 350px;
+    border: 2px solid #00e5ff;
+    box-shadow: 0 0 30px rgba(0, 229, 255, 0.5);
+}
+
+.modal-content h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #00e5ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.modal-content p {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    color: #e1f5fe;
+}
+
+.best-score {
+    font-size: 1.1rem;
+    color: #ffeb3b;
+    margin: 20px 0;
+    font-weight: 600;
+}
+
+.modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.btn {
+    padding: 15px 25px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: white;
+}
+
+.btn:active {
+    transform: translateY(2px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #8e2de2, #4a00e0);
+}
+
+/* Десктопный тулбар (скрыт на мобильных) */
+.desktop-toolbar {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(25, 25, 60, 0.9);
+    padding: 15px;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    border-top: 2px solid #00e5ff;
+}
+
+.desktop-stats {
+    display: flex;
+    gap: 20px;
+    color: #a5d6ff;
+    font-size: 1.1rem;
+}
+
+.desktop-stats span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.desktop-controls {
+    display: flex;
+    gap: 15px;
+}
+
+.desktop-btn {
+    padding: 10px 20px;
+    background: rgba(0, 229, 255, 0.2);
+    border: 1px solid #00e5ff;
+    color: #00e5ff;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.desktop-btn:active {
+    background: rgba(0, 229, 255, 0.4);
+}
+
+/* Медиа-запросы для больших экранов */
+@media (min-width: 768px) {
+    .mobile-menu-btn {
+        display: none;
+    }
+    
+    .side-panel {
+        left: -300px !important;
+    }
+    
+    .desktop-toolbar {
+        display: flex;
+    }
+    
+    .game-minimal-ui {
+        display: none;
+    }
+}
+
+/* Анимации */
+@keyframes slideIn {
+    from { left: -300px; }
+    to { left: 0; }
+}
+
+@keyframes slideOut {
+    from { left: 0; }
+    to { left: -300px; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+
+.side-panel.open {
+    box-shadow: 5px 0 35px rgba(0, 0, 0, 0.8);
+}
+/* Предотвращение скролла на телефонах */
+body.no-scroll {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+/* Кнопка паузы в правом верхнем углу */
+.pause-btn-top {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 87, 34, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    cursor: pointer;
+    border: 2px solid rgba(255, 87, 34, 0.5);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s;
+}
+
+.pause-btn-top:active {
+    transform: scale(0.95);
+    background: rgba(255, 87, 34, 0.4);
+}
+
+.pause-btn-top i {
+    font-size: 1.5rem;
+    color: #ff5722;
+}
+
+/* Обновляем позицию меню и быстрой статистики */
+.mobile-menu-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 229, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    cursor: pointer;
+    border: 2px solid rgba(0, 229, 255, 0.5);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s;
+}
+
+/* Быстрая статистика теперь под кнопкой паузы */
+.game-minimal-ui {
+    position: fixed;
+    top: 80px; /* Ниже кнопки паузы */
+    right: 15px;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    border-radius: 20px;
+    padding: 10px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* На маленьких экранах делаем компактнее */
+@media (max-width: 480px) {
+    .mobile-menu-btn,
+    .pause-btn-top {
+        width: 45px;
+        height: 45px;
+        top: 10px;
+    }
+    
+    .mobile-menu-btn {
+        left: 10px;
+    }
+    
+    .pause-btn-top {
+        right: 10px;
+    }
+    
+    .game-minimal-ui {
+        top: 70px;
+        right: 10px;
+        padding: 8px 12px;
+    }
+    
+    .quick-stats {
+        gap: 12px;
+    }
+    
+    .quick-stat {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .mobile-menu-btn,
+    .pause-btn-top {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .pause-btn-top i,
+    .mobile-menu-btn i {
+        font-size: 1.2rem;
+    }
+    
+    .game-minimal-ui {
+        top: 65px;
+        padding: 6px 10px;
+    }
+    
+    .quick-stats {
+        gap: 10px;
+    }
+    
+    .quick-stat {
+        font-size: 0.8rem;
+    }
+}
+
+/* На больших экранах скрываем кнопку паузы (есть в тулбаре) */
+@media (min-width: 768px) {
+    .pause-btn-top {
+        display: none;
+    }
+    
+    .game-minimal-ui {
+        display: none;
+    }
+    
+    .mobile-menu-btn {
+        display: none;
+    }
+}
