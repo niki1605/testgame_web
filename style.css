@@ -592,37 +592,7 @@ body.no-scroll {
     height: 100%;
 }
 
-/* Кнопка паузы в правом верхнем углу */
-.pause-btn-top {
-    position: fixed;
-    top: 15px;
-    right: 15px;
-    width: 50px;
-    height: 50px;
-    background: rgba(255, 87, 34, 0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    cursor: pointer;
-    border: 2px solid rgba(255, 87, 34, 0.5);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s;
-}
-
-.pause-btn-top:active {
-    transform: scale(0.95);
-    background: rgba(255, 87, 34, 0.4);
-}
-
-.pause-btn-top i {
-    font-size: 1.5rem;
-    color: #ff5722;
-}
-
-/* Обновляем позицию меню и быстрой статистики */
+/* Кнопка меню */
 .mobile-menu-btn {
     position: fixed;
     top: 15px;
@@ -642,10 +612,20 @@ body.no-scroll {
     transition: all 0.3s;
 }
 
-/* Быстрая статистика теперь под кнопкой паузы */
+.mobile-menu-btn:active {
+    transform: scale(0.95);
+    background: rgba(0, 229, 255, 0.4);
+}
+
+.mobile-menu-btn i {
+    font-size: 1.5rem;
+    color: #00e5ff;
+}
+
+/* Быстрая статистика теперь в правом верхнем углу */
 .game-minimal-ui {
     position: fixed;
-    top: 80px; /* Ниже кнопки паузы */
+    top: 15px;
     right: 15px;
     z-index: 10;
     background: rgba(0, 0, 0, 0.6);
@@ -657,23 +637,15 @@ body.no-scroll {
 
 /* На маленьких экранах делаем компактнее */
 @media (max-width: 480px) {
-    .mobile-menu-btn,
-    .pause-btn-top {
+    .mobile-menu-btn {
         width: 45px;
         height: 45px;
         top: 10px;
-    }
-    
-    .mobile-menu-btn {
         left: 10px;
     }
     
-    .pause-btn-top {
-        right: 10px;
-    }
-    
     .game-minimal-ui {
-        top: 70px;
+        top: 10px;
         right: 10px;
         padding: 8px 12px;
     }
@@ -688,19 +660,16 @@ body.no-scroll {
 }
 
 @media (max-width: 360px) {
-    .mobile-menu-btn,
-    .pause-btn-top {
+    .mobile-menu-btn {
         width: 40px;
         height: 40px;
     }
     
-    .pause-btn-top i,
     .mobile-menu-btn i {
         font-size: 1.2rem;
     }
     
     .game-minimal-ui {
-        top: 65px;
         padding: 6px 10px;
     }
     
@@ -713,12 +682,8 @@ body.no-scroll {
     }
 }
 
-/* На больших экранах скрываем кнопку паузы (есть в тулбаре) */
+/* На больших экранах скрываем меню и быструю статистику */
 @media (min-width: 768px) {
-    .pause-btn-top {
-        display: none;
-    }
-    
     .game-minimal-ui {
         display: none;
     }
@@ -726,4 +691,10 @@ body.no-scroll {
     .mobile-menu-btn {
         display: none;
     }
+}
+
+/* Убираем кнопку паузы из десктоп тулбара */
+.desktop-controls {
+    display: flex;
+    gap: 15px;
 }

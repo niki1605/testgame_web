@@ -7,9 +7,6 @@ const menuBtn = document.getElementById('menuBtn');
 const sidePanel = document.getElementById('sidePanel');
 const closePanel = document.getElementById('closePanel');
 
-// Кнопка паузы в правом верхнем углу
-const pauseBtnTop = document.getElementById('pauseBtnTop');
-
 // Элементы статистики (панель)
 const livesElement = document.getElementById('lives');
 const scoreElement = document.getElementById('score');
@@ -33,7 +30,6 @@ const vibrateToggle = document.getElementById('vibrateToggle');
 
 // Десктоп элементы
 const desktopStartBtn = document.getElementById('desktopStartBtn');
-const desktopPauseBtn = document.getElementById('desktopPauseBtn');
 const desktopLives = document.getElementById('desktopLives');
 const desktopScore = document.getElementById('desktopScore');
 const desktopLevel = document.getElementById('desktopLevel');
@@ -74,7 +70,8 @@ let game = {
     asteroidInterval: 1500,
     soundEnabled: true,
     vibrationEnabled: true,
-    panelOpen: false
+    panelOpen: false,
+    wasPausedBeforePanel: false // запоминаем состояние паузы до открытия панели
 };
 
 // Лучший результат
@@ -145,21 +142,16 @@ function initBackground() {
 
 // Настройка обработчиков событий
 function setupEventListeners() {
-    // Открытие/закрытие панели ТОЛЬКО ПО КНОПКЕ
+    // Открытие/закрытие панели - автоматическая пауза
     menuBtn.addEventListener('click', togglePanel);
     closePanel.addEventListener('click', closePanelHandler);
-    
-    // Кнопка паузы в правом верхнем углу
-    pauseBtnTop.addEventListener('click', togglePause);
     
     // Клик вне панели закрывает ее
     document.addEventListener('click', function(e) {
         if (game.panelOpen && 
             !sidePanel.contains(e.target) && 
             e.target !== menuBtn && 
-            !menuBtn.contains(e.target) &&
-            e.target !== pauseBtnTop &&
-            !pauseBtnTop.contains(e.target)) {
+            !menuBtn.contains(e.target)) {
             closePanelHandler();
         }
     });
@@ -181,9 +173,6 @@ function setupEventListeners() {
             shootBullet();
             e.preventDefault();
         }
-        if (e.key === 'p' || e.key === 'P') {
-            togglePause();
-        }
         if (e.key === 'Escape') {
             if (game.panelOpen) {
                 closePanelHandler();
@@ -198,6 +187,9 @@ function setupEventListeners() {
     let isDragging = false;
     
     canvas.addEventListener('touchstart', function(e) {
+        // Если панель открыта, не обрабатываем касания
+        if (game.panelOpen) return;
+        
         e.preventDefault();
         const touch = e.touches[0];
         touchStartX = touch.clientX;
@@ -211,9 +203,11 @@ function setupEventListeners() {
     }, { passive: false });
     
     canvas.addEventListener('touchmove', function(e) {
-        e.preventDefault();
+        // Если панель открыта, не обрабатываем движения
+        if (game.panelOpen) return;
         if (!isDragging) return;
         
+        e.preventDefault();
         const touch = e.touches[0];
         const deltaX = touch.clientX - touchStartX;
         
@@ -225,20 +219,28 @@ function setupEventListeners() {
     }, { passive: false });
     
     canvas.addEventListener('touchend', function(e) {
+        if (game.panelOpen) return;
         e.preventDefault();
         isDragging = false;
     }, { passive: false });
     
     // Основные кнопки игры
-    startBtn.addEventListener('click', startGame);
-    restartBtn.addEventListener('click', startGame);
+    startBtn.addEventListener('click', function() {
+        startGame();
+        closePanelHandler(); // Закрываем панель при старте игры
+    });
+    
+    restartBtn.addEventListener('click', function() {
+        startGame();
+        closePanelHandler(); // Закрываем панель при рестарте
+    });
+    
     playAgainBtn.addEventListener('click', startGame);
     shareBtn.addEventListener('click', shareScore);
     
     // Десктоп кнопки
     if (desktopStartBtn) {
         desktopStartBtn.addEventListener('click', startGame);
-        desktopPauseBtn.addEventListener('click', togglePause);
     }
     
     // Полноэкранный режим
@@ -254,7 +256,7 @@ function setupEventListeners() {
     });
 }
 
-// Управление панелью
+// Управление панелью с автоматической паузой
 function togglePanel() {
     if (game.panelOpen) {
         closePanelHandler();
@@ -264,6 +266,15 @@ function togglePanel() {
 }
 
 function openPanel() {
+    // Запоминаем состояние паузы перед открытием
+    game.wasPausedBeforePanel = game.paused;
+    
+    // Ставим игру на паузу при открытии меню
+    if (game.running && !game.paused) {
+        game.paused = true;
+        showMessage('Игра на паузе', '#ff9800', 1000);
+    }
+    
     sidePanel.classList.add('open');
     game.panelOpen = true;
     document.body.classList.add('no-scroll');
@@ -273,6 +284,12 @@ function closePanelHandler() {
     sidePanel.classList.remove('open');
     game.panelOpen = false;
     document.body.classList.remove('no-scroll');
+    
+    // Восстанавливаем состояние паузы после закрытия
+    // Если игра не была на паузе до открытия меню - продолжаем
+    if (game.running && !game.wasPausedBeforePanel) {
+        game.paused = false;
+    }
 }
 
 // Вибрация
@@ -322,7 +339,7 @@ function updateStats() {
 
 // Стрельба
 function shootBullet() {
-    if (!game.running || game.paused) return;
+    if (!game.running || game.paused || game.panelOpen) return;
     
     game.bullets.push({
         x: player.x + player.width / 2 - 3,
@@ -690,16 +707,23 @@ function draw() {
     });
     ctx.globalAlpha = 1;
     
-    // UI на canvas (пауза)
-    if (game.paused) {
+    // UI на canvas (пауза при открытой панели или обычной паузе)
+    if (game.paused || game.panelOpen) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#00e5ff';
         ctx.font = 'bold 30px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('ПАУЗА', canvas.width / 2, canvas.height / 2);
-        ctx.font = 'bold 18px Arial';
-        ctx.fillText('Нажмите "Пауза" для продолжения', canvas.width / 2, canvas.height / 2 + 40);
+        
+        if (game.panelOpen) {
+            ctx.fillText('МЕНЮ ОТКРЫТО', canvas.width / 2, canvas.height / 2);
+            ctx.font = 'bold 18px Arial';
+            ctx.fillText('Игра на паузе', canvas.width / 2, canvas.height / 2 + 40);
+        } else {
+            ctx.fillText('ПАУЗА', canvas.width / 2, canvas.height / 2);
+            ctx.font = 'bold 18px Arial';
+            ctx.fillText('Нажмите меню для продолжения', canvas.width / 2, canvas.height / 2 + 40);
+        }
         ctx.textAlign = 'left';
     }
 }
@@ -722,6 +746,8 @@ function startGame() {
     game.bullets = [];
     game.particles = [];
     game.asteroidInterval = 1500;
+    game.panelOpen = false;
+    game.wasPausedBeforePanel = false;
     
     player.x = canvas.width / 2 - player.width / 2;
     player.shootCooldown = 0;
@@ -730,12 +756,8 @@ function startGame() {
     updateStats();
     
     // Закрытие панели при старте игры
-    if (game.panelOpen) {
-        closePanelHandler();
-    }
-    
-    // Обновление иконки кнопки паузы
-    updatePauseButtonIcon();
+    sidePanel.classList.remove('open');
+    document.body.classList.remove('no-scroll');
     
     gameOverModal.style.display = 'none';
     
@@ -746,48 +768,10 @@ function startGame() {
     showMessage('Уничтожай астероиды!', '#00e5ff', 2000);
 }
 
-// Пауза игры
-function togglePause() {
-    if (game.running) {
-        game.paused = !game.paused;
-        updatePauseButtonIcon();
-        
-        if (game.paused) {
-            showMessage('Игра на паузе', '#ff9800', 1000);
-        }
-    }
-}
-
-// Обновление иконки кнопки паузы
-function updatePauseButtonIcon() {
-    if (pauseBtnTop) {
-        pauseBtnTop.innerHTML = game.paused ? 
-            '<i class="fas fa-play"></i>' : 
-            '<i class="fas fa-pause"></i>';
-        
-        // Меняем цвет в зависимости от состояния
-        if (game.paused) {
-            pauseBtnTop.style.background = 'rgba(76, 175, 80, 0.2)';
-            pauseBtnTop.style.borderColor = 'rgba(76, 175, 80, 0.5)';
-            pauseBtnTop.querySelector('i').style.color = '#4caf50';
-        } else {
-            pauseBtnTop.style.background = 'rgba(255, 87, 34, 0.2)';
-            pauseBtnTop.style.borderColor = 'rgba(255, 87, 34, 0.5)';
-            pauseBtnTop.querySelector('i').style.color = '#ff5722';
-        }
-    }
-    
-    // Обновляем десктоп кнопку
-    if (desktopPauseBtn) {
-        desktopPauseBtn.innerHTML = game.paused ? 
-            '<i class="fas fa-play"></i> Продолжить' : 
-            '<i class="fas fa-pause"></i> Пауза';
-    }
-}
-
 // Конец игры
 function endGame() {
     game.running = false;
+    game.paused = true;
     
     // Обновляем лучший результат
     if (game.score > bestScore) {
