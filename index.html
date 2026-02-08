@@ -56,6 +56,10 @@
                     <i class="fas fa-redo"></i>
                     <span>Заново</span>
                 </button>
+                <button id="sensorToggleBtn" class="panel-btn btn-sensor">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Сенсор: ВЫКЛ</span>
+                </button>
             </div>
             
             <div class="instructions-panel">
@@ -64,7 +68,7 @@
                     <i class="fas fa-mouse-pointer"></i>
                     <div>
                         <strong>На ПК:</strong>
-                        <p>Мышь: клик/перетаскивание - движение</p>
+                        <p>Мышь: перетаскивание - движение</p>
                         <p>Левый клик - стрельба</p>
                         <p>Клавиши: ← → или A D - движение</p>
                         <p>Пробел - стрельба</p>
@@ -76,6 +80,8 @@
                         <strong>На телефоне:</strong>
                         <p>Свайп влево/вправо - движение</p>
                         <p>Касание экрана - стрельба</p>
+                        <p>ИЛИ включите сенсор в меню</p>
+                        <p>Наклон телефона - движение</p>
                     </div>
                 </div>
                 <p class="game-goal">Цель: защищайте планету от астероидов!</p>
@@ -121,6 +127,9 @@
                 <span class="quick-stat">
                     <i class="fas fa-bolt"></i> <span id="quickLevel">1</span>
                 </span>
+            </div>
+            <div class="sensor-indicator" id="sensorIndicator" style="display: none;">
+                <i class="fas fa-mobile-alt"></i>
             </div>
         </div>
     </div>

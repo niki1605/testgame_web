@@ -20,6 +20,7 @@ const quickLevel = document.getElementById('quickLevel');
 // Элементы управления
 const startBtn = document.getElementById('startBtn');
 const restartBtn = document.getElementById('restartBtn');
+const sensorToggleBtn = document.getElementById('sensorToggleBtn');
 const playAgainBtn = document.getElementById('playAgainBtn');
 const shareBtn = document.getElementById('shareBtn');
 const fullscreenBtn = document.getElementById('fullscreenBtn');
@@ -27,6 +28,9 @@ const fullscreenBtn = document.getElementById('fullscreenBtn');
 // Настройки
 const soundToggle = document.getElementById('soundToggle');
 const vibrateToggle = document.getElementById('vibrateToggle');
+
+// Индикатор сенсора
+const sensorIndicator = document.getElementById('sensorIndicator');
 
 // Game over элементы
 const gameOverModal = document.getElementById('gameOver');
@@ -64,10 +68,13 @@ let game = {
     asteroidInterval: 1500,
     soundEnabled: true,
     vibrationEnabled: true,
+    sensorEnabled: false, // управление через гироскоп
     panelOpen: false,
     wasPausedBeforePanel: false,
     isDragging: false,
-    dragStartX: 0
+    dragStartX: 0,
+    lastShootTime: 0, // время последнего выстрела для предотвращения спама
+    shootCooldownTime: 300 // задержка между выстрелами в мс
 };
 
 // Лучший результат
@@ -92,6 +99,11 @@ const gameSettings = {
     planetY: 0
 };
 
+// Переменные для гироскопа
+let beta = 0; // наклон вперед-назад
+let gamma = 0; // наклон влево-вправо
+let isGyroInitialized = false;
+
 // Инициализация игры
 function init() {
     // Инициализация canvas
@@ -112,6 +124,9 @@ function init() {
     
     // Настройка обработчиков
     setupEventListeners();
+    
+    // Инициализация гироскопа
+    initGyro();
     
     // Запуск игрового цикла
     gameLoop();
@@ -134,6 +149,41 @@ function initBackground() {
             brightness: Math.random() * 0.5 + 0.3
         });
     }
+}
+
+// Инициализация гироскопа
+function initGyro() {
+    if ('DeviceOrientationEvent' in window && 'ondeviceorientation' in window) {
+        // Запрашиваем разрешение на доступ к гироскопу (для iOS)
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            // Это iOS - нужно запросить разрешение
+            DeviceOrientationEvent.requestPermission()
+                .then(permissionState => {
+                    if (permissionState === 'granted') {
+                        window.addEventListener('deviceorientation', handleDeviceOrientation);
+                        isGyroInitialized = true;
+                    }
+                })
+                .catch(console.error);
+        } else {
+            // Android и другие - просто добавляем обработчик
+            window.addEventListener('deviceorientation', handleDeviceOrientation);
+            isGyroInitialized = true;
+        }
+    }
+}
+
+// Обработчик гироскопа
+function handleDeviceOrientation(event) {
+    if (!game.sensorEnabled || !game.running || game.paused || game.panelOpen) return;
+    
+    // Получаем значения наклона
+    beta = event.beta || 0;  // наклон вперед-назад (от -180 до 180)
+    gamma = event.gamma || 0; // наклон влево-вправо (от -90 до 90)
+    
+    // Ограничиваем значения
+    beta = Math.max(-90, Math.min(90, beta));
+    gamma = Math.max(-90, Math.min(90, gamma));
 }
 
 // Настройка обработчиков событий (единые для всех устройств)
@@ -170,8 +220,9 @@ function setupEventListeners() {
     canvas.addEventListener('touchend', handleTouchEnd);
     canvas.addEventListener('touchcancel', handleTouchEnd);
     
-    // Клик/тап для стрельбы
+    // КЛИК/ТАП ТОЛЬКО ДЛЯ СТРЕЛЬБЫ
     canvas.addEventListener('click', handleShoot);
+    canvas.addEventListener('touchend', handleShootTouch);
     
     // Клавиатура для ПК (дополнительное управление)
     window.addEventListener('keydown', handleKeyDown);
@@ -186,6 +237,9 @@ function setupEventListeners() {
         startGame();
         closePanelHandler();
     });
+    
+    // Кнопка переключения сенсора
+    sensorToggleBtn.addEventListener('click', toggleSensorControl);
     
     playAgainBtn.addEventListener('click', startGame);
     shareBtn.addEventListener('click', shareScore);
@@ -208,19 +262,56 @@ function setupEventListeners() {
     });
 }
 
-// Обработчики мыши (для ПК)
+// Переключение управления сенсором
+function toggleSensorControl() {
+    game.sensorEnabled = !game.sensorEnabled;
+    
+    if (game.sensorEnabled) {
+        sensorToggleBtn.innerHTML = '<i class="fas fa-mobile-alt"></i><span>Сенсор: ВКЛ</span>';
+        sensorToggleBtn.style.background = 'linear-gradient(135deg, #4caf50, #2e7d32)';
+        
+        // Показываем индикатор
+        sensorIndicator.style.display = 'flex';
+        
+        // Запрашиваем разрешение для iOS если еще не инициализировано
+        if (!isGyroInitialized && typeof DeviceOrientationEvent.requestPermission === 'function') {
+            DeviceOrientationEvent.requestPermission()
+                .then(permissionState => {
+                    if (permissionState === 'granted') {
+                        window.addEventListener('deviceorientation', handleDeviceOrientation);
+                        isGyroInitialized = true;
+                        showMessage('Сенсорное управление активировано!', '#4caf50', 2000);
+                    }
+                })
+                .catch(() => {
+                    showMessage('Не удалось получить доступ к сенсору', '#f44336', 2000);
+                    game.sensorEnabled = false;
+                    sensorToggleBtn.innerHTML = '<i class="fas fa-mobile-alt"></i><span>Сенсор: ВЫКЛ</span>';
+                    sensorToggleBtn.style.background = 'linear-gradient(135deg, #9c27b0, #673ab7)';
+                    sensorIndicator.style.display = 'none';
+                });
+        } else {
+            showMessage('Наклоняйте телефон для управления!', '#4caf50', 2000);
+        }
+    } else {
+        sensorToggleBtn.innerHTML = '<i class="fas fa-mobile-alt"></i><span>Сенсор: ВЫКЛ</span>';
+        sensorToggleBtn.style.background = 'linear-gradient(135deg, #9c27b0, #673ab7)';
+        sensorIndicator.style.display = 'none';
+        showMessage('Сенсорное управление отключено', '#9c27b0', 2000);
+    }
+}
+
+// Обработчики мыши (для ПК) - ТОЛЬКО ДЛЯ ДВИЖЕНИЯ
 function handleMouseDown(e) {
-    if (game.panelOpen || !game.running) return;
+    if (game.panelOpen || !game.running || game.sensorEnabled) return;
     
     e.preventDefault();
     game.isDragging = true;
     game.dragStartX = e.clientX;
-    
-    // Не стреляем при зажатии мыши, только при клике
 }
 
 function handleMouseMove(e) {
-    if (!game.isDragging || game.panelOpen || !game.running || game.paused) return;
+    if (!game.isDragging || game.panelOpen || !game.running || game.paused || game.sensorEnabled) return;
     
     e.preventDefault();
     const deltaX = e.clientX - game.dragStartX;
@@ -236,20 +327,18 @@ function handleMouseUp(e) {
     game.isDragging = false;
 }
 
-// Обработчики тача (для мобильных)
+// Обработчики тача (для мобильных) - ТОЛЬКО ДЛЯ ДВИЖЕНИЯ
 function handleTouchStart(e) {
-    if (game.panelOpen || !game.running) return;
+    if (game.panelOpen || !game.running || game.sensorEnabled) return;
     
     e.preventDefault();
     const touch = e.touches[0];
     game.isDragging = true;
     game.dragStartX = touch.clientX;
-    
-    // Не стреляем при касании, только при тапе
 }
 
 function handleTouchMove(e) {
-    if (!game.isDragging || game.panelOpen || !game.running || game.paused) return;
+    if (!game.isDragging || game.panelOpen || !game.running || game.paused || game.sensorEnabled) return;
     
     e.preventDefault();
     const touch = e.touches[0];
@@ -266,9 +355,9 @@ function handleTouchEnd(e) {
     game.isDragging = false;
 }
 
-// Стрельба (клик/тап)
+// СТРЕЛЬБА ПРИ КЛИКЕ (для ПК)
 function handleShoot(e) {
-    if (game.panelOpen || !game.running || game.paused) return;
+    if (game.panelOpen || !game.running || game.paused || game.sensorEnabled) return;
     
     e.preventDefault();
     
@@ -276,12 +365,31 @@ function handleShoot(e) {
     // Если двигали - не стреляем
     if (Math.abs(e.clientX - game.dragStartX) > 10) return;
     
+    // Проверяем кулдаун
+    const currentTime = Date.now();
+    if (currentTime - game.lastShootTime < game.shootCooldownTime) return;
+    
+    game.lastShootTime = currentTime;
+    shootBullet();
+}
+
+// СТРЕЛЬБА ПРИ ТАПЕ (для мобильных)
+function handleShootTouch(e) {
+    if (game.panelOpen || !game.running || game.paused || game.sensorEnabled) return;
+    
+    e.preventDefault();
+    
+    // Проверяем кулдаун
+    const currentTime = Date.now();
+    if (currentTime - game.lastShootTime < game.shootCooldownTime) return;
+    
+    game.lastShootTime = currentTime;
     shootBullet();
 }
 
 // Управление клавиатурой (для ПК)
 function handleKeyDown(e) {
-    if (game.panelOpen || !game.running || game.paused) return;
+    if (game.panelOpen || !game.running || game.paused || game.sensorEnabled) return;
     
     switch(e.key) {
         case 'ArrowLeft':
@@ -295,10 +403,13 @@ function handleKeyDown(e) {
             player.x = Math.min(canvas.width - player.width, player.x + player.speed);
             break;
         case ' ':
-            if (player.shootCooldown <= 0) {
-                shootBullet();
-                e.preventDefault();
-            }
+            // Проверяем кулдаун
+            const currentTime = Date.now();
+            if (currentTime - game.lastShootTime < game.shootCooldownTime) return;
+            
+            game.lastShootTime = currentTime;
+            shootBullet();
+            e.preventDefault();
             break;
         case 'Escape':
             if (game.panelOpen) {
@@ -542,6 +653,21 @@ function update() {
     // Обновление перезарядки
     if (player.shootCooldown > 0) {
         player.shootCooldown--;
+    }
+    
+    // УПРАВЛЕНИЕ ЧЕРЕЗ ГИРОСКОП (если включено)
+    if (game.sensorEnabled && isGyroInitialized) {
+        // Используем gamma (наклон влево-вправо) для управления
+        // gamma: -90 (влево) до 90 (вправо)
+        // Конвертируем в значение от -1 до 1
+        let tiltFactor = gamma / 90;
+        
+        // Ограничиваем
+        tiltFactor = Math.max(-1, Math.min(1, tiltFactor));
+        
+        // Двигаем игрока в зависимости от наклона
+        player.x += tiltFactor * player.speed * 1.5;
+        player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
     }
     
     // Создание астероидов
@@ -796,6 +922,7 @@ function startGame() {
     game.asteroidInterval = 1500;
     game.panelOpen = false;
     game.wasPausedBeforePanel = false;
+    game.lastShootTime = 0;
     
     player.x = canvas.width / 2 - player.width / 2;
     player.shootCooldown = 0;
