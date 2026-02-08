@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Космический защитник | Мобильная игра</title>
+    <title>Космический защитник | Игра для всех устройств</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Мобильное меню -->
+    <!-- Мобильное меню (работает и на ПК) -->
     <div class="mobile-menu-btn" id="menuBtn">
         <i class="fas fa-bars"></i>
     </div>
 
-    <!-- Боковая панель управления -->
+    <!-- Боковая панель управления (работает и на ПК) -->
     <div class="side-panel" id="sidePanel">
         <div class="panel-header">
             <h3><i class="fas fa-gamepad"></i> Управление</h3>
@@ -60,11 +60,25 @@
             
             <div class="instructions-panel">
                 <h4><i class="fas fa-info-circle"></i> Как играть</h4>
-                <p>1. Защищайте планету от астероидов</p>
-                <p>2. Свайп влево/вправо - движение корабля</p>
-                <p>3. Касание экрана - стрельба</p>
-                <p>4. Избегайте столкновений с астероидами</p>
-                <p>5. Не давайте астероидам упасть на планету</p>
+                <div class="instruction-item">
+                    <i class="fas fa-mouse-pointer"></i>
+                    <div>
+                        <strong>На ПК:</strong>
+                        <p>Мышь: клик/перетаскивание - движение</p>
+                        <p>Левый клик - стрельба</p>
+                        <p>Клавиши: ← → или A D - движение</p>
+                        <p>Пробел - стрельба</p>
+                    </div>
+                </div>
+                <div class="instruction-item">
+                    <i class="fas fa-mobile-alt"></i>
+                    <div>
+                        <strong>На телефоне:</strong>
+                        <p>Свайп влево/вправо - движение</p>
+                        <p>Касание экрана - стрельба</p>
+                    </div>
+                </div>
+                <p class="game-goal">Цель: защищайте планету от астероидов!</p>
             </div>
             
             <div class="settings-panel">
@@ -95,7 +109,7 @@
     <div class="game-container-fullscreen">
         <canvas id="gameCanvas"></canvas>
         
-        <!-- Минимальные UI элементы на игровом поле -->
+        <!-- Минимальные UI элементы на игровом поле (всегда видны) -->
         <div class="game-minimal-ui">
             <div class="quick-stats">
                 <span class="quick-stat">
@@ -127,20 +141,6 @@
                     <i class="fas fa-share"></i> Поделиться
                 </button>
             </div>
-        </div>
-    </div>
-
-    <!-- Минимальный тулбар (только для больших экранов) -->
-    <div class="desktop-toolbar">
-        <div class="desktop-stats">
-            <span>Жизни: <span id="desktopLives">3</span></span>
-            <span>Очки: <span id="desktopScore">0</span></span>
-            <span>Уровень: <span id="desktopLevel">1</span></span>
-        </div>
-        <div class="desktop-controls">
-            <button id="desktopStartBtn" class="desktop-btn">
-                <i class="fas fa-play"></i> Старт
-            </button>
         </div>
     </div>
 

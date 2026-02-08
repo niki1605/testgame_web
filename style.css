@@ -18,7 +18,7 @@ body {
     position: fixed;
 }
 
-/* Кнопка меню в левом верхнем углу */
+/* Кнопка меню (работает на всех устройствах) */
 .mobile-menu-btn {
     position: fixed;
     top: 15px;
@@ -38,6 +38,11 @@ body {
     transition: all 0.3s;
 }
 
+.mobile-menu-btn:hover {
+    background: rgba(0, 229, 255, 0.3);
+    transform: scale(1.05);
+}
+
 .mobile-menu-btn:active {
     transform: scale(0.95);
     background: rgba(0, 229, 255, 0.4);
@@ -48,7 +53,7 @@ body {
     color: #00e5ff;
 }
 
-/* Боковая панель */
+/* Боковая панель управления (работает на всех устройствах) */
 .side-panel {
     position: fixed;
     top: 0;
@@ -100,8 +105,12 @@ body {
     transition: all 0.3s;
 }
 
-.close-panel:active {
+.close-panel:hover {
     background: rgba(255, 255, 255, 0.1);
+}
+
+.close-panel:active {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .panel-content {
@@ -178,16 +187,17 @@ body {
     color: white;
 }
 
+.panel-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
 .panel-btn:active {
-    transform: translateY(2px);
+    transform: translateY(0);
 }
 
 .btn-start {
     background: linear-gradient(135deg, #00c6ff, #0072ff);
-}
-
-.btn-pause {
-    background: linear-gradient(135deg, #8e2de2, #4a00e0);
 }
 
 .btn-restart {
@@ -201,64 +211,8 @@ body {
     width: 100%;
 }
 
-/* Кнопки управления в панели */
-.mobile-controls-panel {
-    background: rgba(10, 20, 40, 0.6);
-    border-radius: 15px;
-    padding: 20px;
-    border-left: 4px solid #00e5ff;
-}
-
-.mobile-controls-panel h4 {
-    color: #00e5ff;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.1rem;
-}
-
-.control-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    margin-top: 10px;
-}
-
-.control-btn {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(0, 229, 255, 0.2);
-    backdrop-filter: blur(10px);
-    color: white;
-    font-size: 1.8rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    margin: 0 auto;
-}
-
-.control-btn:active {
-    transform: scale(0.95);
-    background: rgba(0, 229, 255, 0.4);
-}
-
-.btn-left, .btn-right {
-    background: rgba(76, 175, 80, 0.3);
-    border-color: rgba(76, 175, 80, 0.6);
-}
-
-.btn-shoot {
-    background: rgba(255, 87, 34, 0.3);
-    border-color: rgba(255, 87, 34, 0.6);
-    width: 80px;
-    height: 80px;
-    font-size: 2rem;
+.btn-fullscreen:hover {
+    background: rgba(0, 229, 255, 0.3);
 }
 
 /* Инструкции в панели */
@@ -277,11 +231,47 @@ body {
     font-size: 1.1rem;
 }
 
-.instructions-panel p {
+.instruction-item {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    border-left: 3px solid #00e5ff;
+}
+
+.instruction-item i {
+    color: #00e5ff;
+    font-size: 1.2rem;
+    margin-top: 3px;
+}
+
+.instruction-item div {
+    flex: 1;
+}
+
+.instruction-item strong {
+    color: #4fc3f7;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.instruction-item p {
     color: #b3e5fc;
-    margin-bottom: 8px;
+    margin-bottom: 3px;
     font-size: 0.9rem;
     line-height: 1.4;
+}
+
+.game-goal {
+    color: #ffeb3b !important;
+    font-weight: 600;
+    margin-top: 10px !important;
+    padding: 10px;
+    background: rgba(255, 235, 59, 0.1);
+    border-radius: 8px;
+    text-align: center;
 }
 
 /* Настройки в панели */
@@ -378,9 +368,10 @@ input:checked + .slider:before {
     width: 100%;
     height: 100%;
     display: block;
+    cursor: pointer; /* Показываем курсор для ПК */
 }
 
-/* Минимальный UI на игровом поле */
+/* Минимальный UI на игровом поле (всегда виден) */
 .game-minimal-ui {
     position: fixed;
     top: 15px;
@@ -482,8 +473,13 @@ input:checked + .slider:before {
     color: white;
 }
 
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
 .btn:active {
-    transform: translateY(2px);
+    transform: translateY(0);
 }
 
 .btn-primary {
@@ -494,145 +490,18 @@ input:checked + .slider:before {
     background: linear-gradient(135deg, #8e2de2, #4a00e0);
 }
 
-/* Десктопный тулбар (скрыт на мобильных) */
-.desktop-toolbar {
-    display: none;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(25, 25, 60, 0.9);
-    padding: 15px;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 100;
-    backdrop-filter: blur(10px);
-    border-top: 2px solid #00e5ff;
-}
-
-.desktop-stats {
-    display: flex;
-    gap: 20px;
-    color: #a5d6ff;
-    font-size: 1.1rem;
-}
-
-.desktop-stats span {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.desktop-controls {
-    display: flex;
-    gap: 15px;
-}
-
-.desktop-btn {
-    padding: 10px 20px;
-    background: rgba(0, 229, 255, 0.2);
-    border: 1px solid #00e5ff;
-    color: #00e5ff;
-    border-radius: 20px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s;
-}
-
-.desktop-btn:active {
-    background: rgba(0, 229, 255, 0.4);
-}
-
-/* Медиа-запросы для больших экранов */
-@media (min-width: 768px) {
-    .mobile-menu-btn {
-        display: none;
-    }
-    
-    .side-panel {
-        left: -300px !important;
-    }
-    
-    .desktop-toolbar {
-        display: flex;
-    }
-    
-    .game-minimal-ui {
-        display: none;
-    }
-}
-
 /* Анимации */
-@keyframes slideIn {
-    from { left: -300px; }
-    to { left: 0; }
-}
-
-@keyframes slideOut {
-    from { left: 0; }
-    to { left: -300px; }
-}
-
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
 }
 
-
-.side-panel.open {
-    box-shadow: 5px 0 35px rgba(0, 0, 0, 0.8);
-}
 /* Предотвращение скролла на телефонах */
 body.no-scroll {
     overflow: hidden;
     position: fixed;
     width: 100%;
     height: 100%;
-}
-
-/* Кнопка меню */
-.mobile-menu-btn {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    width: 50px;
-    height: 50px;
-    background: rgba(0, 229, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    cursor: pointer;
-    border: 2px solid rgba(0, 229, 255, 0.5);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s;
-}
-
-.mobile-menu-btn:active {
-    transform: scale(0.95);
-    background: rgba(0, 229, 255, 0.4);
-}
-
-.mobile-menu-btn i {
-    font-size: 1.5rem;
-    color: #00e5ff;
-}
-
-/* Быстрая статистика теперь в правом верхнем углу */
-.game-minimal-ui {
-    position: fixed;
-    top: 15px;
-    right: 15px;
-    z-index: 10;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(5px);
-    border-radius: 20px;
-    padding: 10px 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* На маленьких экранах делаем компактнее */
@@ -657,6 +526,10 @@ body.no-scroll {
     .quick-stat {
         font-size: 0.9rem;
     }
+    
+    .side-panel {
+        width: 260px;
+    }
 }
 
 @media (max-width: 360px) {
@@ -680,21 +553,36 @@ body.no-scroll {
     .quick-stat {
         font-size: 0.8rem;
     }
+    
+    .side-panel {
+        width: 240px;
+    }
 }
 
-/* На больших экранах скрываем меню и быструю статистику */
+/* На больших экранах увеличиваем кнопку меню */
 @media (min-width: 768px) {
-    .game-minimal-ui {
-        display: none;
+    .mobile-menu-btn {
+        width: 60px;
+        height: 60px;
+        top: 20px;
+        left: 20px;
     }
     
-    .mobile-menu-btn {
-        display: none;
+    .mobile-menu-btn i {
+        font-size: 1.8rem;
     }
-}
-
-/* Убираем кнопку паузы из десктоп тулбара */
-.desktop-controls {
-    display: flex;
-    gap: 15px;
+    
+    .game-minimal-ui {
+        top: 20px;
+        right: 20px;
+        padding: 12px 18px;
+    }
+    
+    .quick-stat {
+        font-size: 1.1rem;
+    }
+    
+    .side-panel {
+        width: 320px;
+    }
 }

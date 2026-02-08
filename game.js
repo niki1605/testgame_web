@@ -1,4 +1,4 @@
-// Полноэкранная мобильная версия игры
+// Единая версия игры для всех устройств
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -27,12 +27,6 @@ const fullscreenBtn = document.getElementById('fullscreenBtn');
 // Настройки
 const soundToggle = document.getElementById('soundToggle');
 const vibrateToggle = document.getElementById('vibrateToggle');
-
-// Десктоп элементы
-const desktopStartBtn = document.getElementById('desktopStartBtn');
-const desktopLives = document.getElementById('desktopLives');
-const desktopScore = document.getElementById('desktopScore');
-const desktopLevel = document.getElementById('desktopLevel');
 
 // Game over элементы
 const gameOverModal = document.getElementById('gameOver');
@@ -71,7 +65,9 @@ let game = {
     soundEnabled: true,
     vibrationEnabled: true,
     panelOpen: false,
-    wasPausedBeforePanel: false // запоминаем состояние паузы до открытия панели
+    wasPausedBeforePanel: false,
+    isDragging: false,
+    dragStartX: 0
 };
 
 // Лучший результат
@@ -140,7 +136,7 @@ function initBackground() {
     }
 }
 
-// Настройка обработчиков событий
+// Настройка обработчиков событий (единые для всех устройств)
 function setupEventListeners() {
     // Открытие/закрытие панели - автоматическая пауза
     menuBtn.addEventListener('click', togglePanel);
@@ -148,7 +144,7 @@ function setupEventListeners() {
     
     // Клик вне панели закрывает ее
     document.addEventListener('click', function(e) {
-        if (game.panelOpen && 
+        if (game.running && game.panelOpen && 
             !sidePanel.contains(e.target) && 
             e.target !== menuBtn && 
             !menuBtn.contains(e.target)) {
@@ -161,87 +157,38 @@ function setupEventListeners() {
         e.stopPropagation();
     });
     
-    // Клавиатура
-    window.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-            player.x = Math.max(0, player.x - player.speed);
-        }
-        if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-            player.x = Math.min(canvas.width - player.width, player.x + player.speed);
-        }
-        if (e.key === ' ' && player.shootCooldown <= 0) {
-            shootBullet();
-            e.preventDefault();
-        }
-        if (e.key === 'Escape') {
-            if (game.panelOpen) {
-                closePanelHandler();
-            } else {
-                togglePanel();
-            }
-        }
-    });
+    // УПРАВЛЕНИЕ НА ПК И МОБИЛЬНЫХ (единое)
     
-    // Сенсорное управление на игровом поле
-    let touchStartX = 0;
-    let isDragging = false;
+    // Мышь и тач для движения
+    canvas.addEventListener('mousedown', handleMouseDown);
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('mouseleave', handleMouseUp);
     
-    canvas.addEventListener('touchstart', function(e) {
-        // Если панель открыта, не обрабатываем касания
-        if (game.panelOpen) return;
-        
-        e.preventDefault();
-        const touch = e.touches[0];
-        touchStartX = touch.clientX;
-        isDragging = true;
-        
-        // Стрельба при касании
-        if (player.shootCooldown <= 0) {
-            shootBullet();
-            vibrate(50);
-        }
-    }, { passive: false });
+    canvas.addEventListener('touchstart', handleTouchStart);
+    canvas.addEventListener('touchmove', handleTouchMove);
+    canvas.addEventListener('touchend', handleTouchEnd);
+    canvas.addEventListener('touchcancel', handleTouchEnd);
     
-    canvas.addEventListener('touchmove', function(e) {
-        // Если панель открыта, не обрабатываем движения
-        if (game.panelOpen) return;
-        if (!isDragging) return;
-        
-        e.preventDefault();
-        const touch = e.touches[0];
-        const deltaX = touch.clientX - touchStartX;
-        
-        // Двигаем игрока по горизонтали
-        player.x += deltaX * 0.8;
-        player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
-        
-        touchStartX = touch.clientX;
-    }, { passive: false });
+    // Клик/тап для стрельбы
+    canvas.addEventListener('click', handleShoot);
     
-    canvas.addEventListener('touchend', function(e) {
-        if (game.panelOpen) return;
-        e.preventDefault();
-        isDragging = false;
-    }, { passive: false });
+    // Клавиатура для ПК (дополнительное управление)
+    window.addEventListener('keydown', handleKeyDown);
     
     // Основные кнопки игры
     startBtn.addEventListener('click', function() {
         startGame();
-        closePanelHandler(); // Закрываем панель при старте игры
+        closePanelHandler();
     });
     
     restartBtn.addEventListener('click', function() {
         startGame();
-        closePanelHandler(); // Закрываем панель при рестарте
+        closePanelHandler();
     });
     
     playAgainBtn.addEventListener('click', startGame);
     shareBtn.addEventListener('click', shareScore);
-    
-    // Десктоп кнопки
-    if (desktopStartBtn) {
-        desktopStartBtn.addEventListener('click', startGame);
-    }
     
     // Полноэкранный режим
     fullscreenBtn.addEventListener('click', toggleFullscreen);
@@ -254,6 +201,113 @@ function setupEventListeners() {
     document.addEventListener('gesturestart', function(e) {
         e.preventDefault();
     });
+    
+    // Обработка контекстного меню (правый клик)
+    canvas.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+}
+
+// Обработчики мыши (для ПК)
+function handleMouseDown(e) {
+    if (game.panelOpen || !game.running) return;
+    
+    e.preventDefault();
+    game.isDragging = true;
+    game.dragStartX = e.clientX;
+    
+    // Не стреляем при зажатии мыши, только при клике
+}
+
+function handleMouseMove(e) {
+    if (!game.isDragging || game.panelOpen || !game.running || game.paused) return;
+    
+    e.preventDefault();
+    const deltaX = e.clientX - game.dragStartX;
+    
+    // Двигаем игрока по горизонтали
+    player.x += deltaX * 0.8;
+    player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+    
+    game.dragStartX = e.clientX;
+}
+
+function handleMouseUp(e) {
+    game.isDragging = false;
+}
+
+// Обработчики тача (для мобильных)
+function handleTouchStart(e) {
+    if (game.panelOpen || !game.running) return;
+    
+    e.preventDefault();
+    const touch = e.touches[0];
+    game.isDragging = true;
+    game.dragStartX = touch.clientX;
+    
+    // Не стреляем при касании, только при тапе
+}
+
+function handleTouchMove(e) {
+    if (!game.isDragging || game.panelOpen || !game.running || game.paused) return;
+    
+    e.preventDefault();
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - game.dragStartX;
+    
+    // Двигаем игрока по горизонтали
+    player.x += deltaX * 0.8;
+    player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+    
+    game.dragStartX = touch.clientX;
+}
+
+function handleTouchEnd(e) {
+    game.isDragging = false;
+}
+
+// Стрельба (клик/тап)
+function handleShoot(e) {
+    if (game.panelOpen || !game.running || game.paused) return;
+    
+    e.preventDefault();
+    
+    // Проверяем, был ли это драг или клик
+    // Если двигали - не стреляем
+    if (Math.abs(e.clientX - game.dragStartX) > 10) return;
+    
+    shootBullet();
+}
+
+// Управление клавиатурой (для ПК)
+function handleKeyDown(e) {
+    if (game.panelOpen || !game.running || game.paused) return;
+    
+    switch(e.key) {
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+            player.x = Math.max(0, player.x - player.speed);
+            break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+            player.x = Math.min(canvas.width - player.width, player.x + player.speed);
+            break;
+        case ' ':
+            if (player.shootCooldown <= 0) {
+                shootBullet();
+                e.preventDefault();
+            }
+            break;
+        case 'Escape':
+            if (game.panelOpen) {
+                closePanelHandler();
+            } else {
+                togglePanel();
+            }
+            break;
+    }
 }
 
 // Управление панелью с автоматической паузой
@@ -329,12 +383,6 @@ function updateStats() {
     quickLives.textContent = game.lives;
     quickScore.textContent = game.score;
     quickLevel.textContent = game.level;
-    
-    if (desktopLives) {
-        desktopLives.textContent = game.lives;
-        desktopScore.textContent = game.score;
-        desktopLevel.textContent = game.level;
-    }
 }
 
 // Стрельба
@@ -707,7 +755,7 @@ function draw() {
     });
     ctx.globalAlpha = 1;
     
-    // UI на canvas (пауза при открытой панели или обычной паузе)
+    // UI на canvas (пауза при открытой панели)
     if (game.paused || game.panelOpen) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
